@@ -33,11 +33,12 @@ struct SetGame<CardContent> where CardContent: Matchable {
     }
     private(set) var timeSpent: Int = 0
 
-    private(set) var countPlayers = 2
+    private(set) var countPlayers: Int
     private(set) var players = [Player]()
     private(set) var numberOfCurrentPlayer = 0
         
-    init(numberOfCardsInDeck: Int, numberOfCardsStart: Int, cardContentFactory: (Int) -> CardContent) {
+    init(numberOfCardsInDeck: Int, numberOfCardsStart: Int, countPlayers: Int, cardContentFactory: (Int) -> CardContent) {
+        self.countPlayers = countPlayers
         for index in 0..<numberOfCardsInDeck {
             let content = cardContentFactory(index)
             deck.append(Card(id: index, content: content))
@@ -52,7 +53,6 @@ struct SetGame<CardContent> where CardContent: Matchable {
     mutating func choose(_ card: Card) {
         if let chooosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
             cards[chooosenIndex].isChoosen.toggle()
-//            if cardsWasMatch == true || cardsWasMatch == false {
             if cardsWasMatch != nil {
                 if cardsWasMatch == true { deal(3) }
                 resetCardProperties(chooosenIndex)

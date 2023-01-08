@@ -11,10 +11,11 @@ class SetCardGame: ObservableObject {
     typealias Card = SetGame<SetCard>.Card
     static var deckSetting = SetCardDeck()
     static var numberOfCardsStart = 12
+    static var countPlayers = 2
 
     
     private static func createSetGame() -> SetGame<SetCard> {
-        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, numberOfCardsStart: numberOfCardsStart ) { index in
+        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, numberOfCardsStart: numberOfCardsStart, countPlayers: countPlayers ) { index in
             deckSetting.cards[index]
         }
     }
