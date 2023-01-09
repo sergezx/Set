@@ -155,11 +155,11 @@ struct SetGame<CardContent> where CardContent: Matchable {
         } // >2
     }
     
-    mutating func spentTimeFunc (timeHasPassed: Int) {
+    mutating func spentTimeFunc(timeHasPassed: Int) {
         timeSpent = timeHasPassed
     }
 
-    mutating func changePlayer () {
+    mutating func changePlayer() {
         if numberOfCurrentPlayer == countPlayers-1 {
             numberOfCurrentPlayer = 0
         } else {

@@ -49,7 +49,7 @@ struct CardView: View {
         }
     }
     
-    private func shapeFill<SetShape> (shape: SetShape) -> some View where SetShape: Shape {
+    private func shapeFill<SetShape>(shape: SetShape) -> some View where SetShape: Shape {
         ZStack {
             switch card.content.fill {
             case .v1: shape.stroke(lineWidth: DrawingConstants.lineWidth)

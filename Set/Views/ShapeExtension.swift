@@ -25,19 +25,19 @@ struct StripedRect: Shape {
 }
   
 extension Shape {
-    func stripe (_ lineWidth: CGFloat = 2) -> some View {
+    func stripe(_ lineWidth: CGFloat = 2) -> some View {
         ZStack{
             StripedRect().stroke().clipShape(self)
             self.stroke(lineWidth: lineWidth)
         }
     }
-    func blur (_ lineWidth: CGFloat = 2) -> some View {
+    func blur(_ lineWidth: CGFloat = 2) -> some View {
         ZStack {
             self.opacity(0.5)
             self.stroke(lineWidth: lineWidth)
         }
     }
-    func fillAndBorder (_ lineWidth: CGFloat = 2) -> some View {
+    func fillAndBorder(_ lineWidth: CGFloat = 2) -> some View {
         ZStack {
             self.stroke(lineWidth: lineWidth)
             self.fill()
