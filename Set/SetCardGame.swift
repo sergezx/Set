@@ -11,11 +11,11 @@ class SetCardGame: ObservableObject {
     typealias Card = SetGame<SetCard>.Card
     static var deckSetting = SetCardDeck()
     static var numberOfCardsStart = 12
-    static var countPlayers = 2
+    static var playersCount = 2
 
     
     private static func createSetGame() -> SetGame<SetCard> {
-        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, numberOfCardsStart: numberOfCardsStart, countPlayers: countPlayers ) { index in
+        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, numberOfCardsStart: numberOfCardsStart, playersCount: playersCount ) { index in
             deckSetting.cards[index]
         }
     }
@@ -41,7 +41,7 @@ class SetCardGame: ObservableObject {
     }
 
     var numberHint: Int {
-        return model.numberHint
+        return model.hintNumber
     }
 
     var numberOfCurrentPlayer: Int {
@@ -50,8 +50,8 @@ class SetCardGame: ObservableObject {
         
     // MARK: - Intent(s)
     
-    func deal() {
-        model.deal(3)
+    func dealCards() {
+        model.dealCards(3)
     }
     
     func choose(_ card: Card) {

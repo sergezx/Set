@@ -23,9 +23,17 @@ struct CardView: View {
             }
             
 // вынести в функцию, действия однотипны, наклаыдваем лишь фон
-            if card.isHint { shape.foregroundColor(.blue).opacity(0.3) }
-            if card.isMatched == false { shape.foregroundColor(.red).opacity(0.5) }
-            else if card.isMatched == true { shape.foregroundColor(.green).opacity(0.5) }
+            if card.isHint {
+                shape.foregroundColor(.blue).opacity(0.3)
+            }
+            if let isMatched = card.isMatched {
+                if isMatched {
+                    shape.foregroundColor(.green).opacity(0.5)
+                }
+                else {
+                    shape.foregroundColor(.red).opacity(0.5)
+                }
+            }
             
             VStack {
                 Spacer()

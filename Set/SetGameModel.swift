@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Combine
+
 
 protocol Matchable {
     static func match(cards: [Self]) -> Bool?
@@ -15,57 +17,80 @@ struct SetGame<CardContent> where CardContent: Matchable {
     
     private(set) var cards = [Card]()
     private(set) var deck = [Card]() {
-        willSet {
+        didSet {
             countHints()
         }
     }
-    private var selectedCardsIndices: [Int] {cards.indices.filter {cards[$0].isChoosen}}
-    private var isMatchedCards: [Int] {cards.indices.filter {cards[$0].isMatched == true}}
-    private(set) var cardsWasMatch: Bool?
+    private var selectedCardsIndices: [Int] { cards.indices.filter { cards[$0].isChoosen } }
+    private var isMatchedCards: [Int] { cards.indices.filter { cards[$0].isMatched == true } }
+    private(set) var cardsWereMatched: Bool?
 
     private(set) var hints = [[Int]]()
-    private(set) var numberHint = 0
+    private(set) var hintNumber = 0
 
     private(set) var timeLastThreeCardsWereChosen = Date() {
         didSet {
-            spentTimeFunc(timeHasPassed: Int(timeLastThreeCardsWereChosen.timeIntervalSince(oldValue)))
+            self.timeSpent = Int(timeLastThreeCardsWereChosen.timeIntervalSince(oldValue))
         }
     }
     private(set) var timeSpent: Int = 0
 
-    private(set) var countPlayers: Int
+    private(set) var playersCount: Int
     private(set) var players = [Player]()
     private(set) var numberOfCurrentPlayer = 0
+    
+    private(set) var currentDate = Date.now
+//    private(set) var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private(set) var timer = Timer.publish(every: 1, on: .main, in: .common)
+    private(set) var timerSubscription: AnyCancellable?
+    
+    
+    init(numberOfCardsInDeck: Int, numberOfCardsStart: Int, playersCount: Int, cardContentFactory: (Int) -> CardContent) {
+        self.playersCount = playersCount
         
-    init(numberOfCardsInDeck: Int, numberOfCardsStart: Int, countPlayers: Int, cardContentFactory: (Int) -> CardContent) {
-        self.countPlayers = countPlayers
+        fillDeck(numberOfCardsInDeck: numberOfCardsInDeck, cardContentFactory: cardContentFactory)
+        dealCards(numberOfCardsStart)
+        generatePlayers(playersCount: playersCount)
+        
+//        timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+        timerSubscription = timer.eraseToAnyPublisher().sink { _ in } // подписка, в закрывании можно писать все что нужно делать: смена пользователя, обнулять время 
+//        timerSubscription?.cancel()
+// лучше создать метод , который будет создавать таймер и подписку на него startTimer()
+    }
+    
+    mutating func generatePlayers(playersCount: Int) {
+        for i in 0..<playersCount {
+            players.append(Player(name: "Player \(i + 1)"))
+        }
+    }
+    
+    mutating func fillDeck(numberOfCardsInDeck: Int, cardContentFactory: (Int) -> CardContent) {
         for index in 0..<numberOfCardsInDeck {
             let content = cardContentFactory(index)
             deck.append(Card(id: index, content: content))
         }
         deck.shuffle()
-        deal(numberOfCardsStart)
-        for i in 0..<countPlayers {
-            players.append(Player(name: "Player \(i + 1)"))
-        }
     }
 
     mutating func choose(_ card: Card) {
         if let chooosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
             cards[chooosenIndex].isChoosen.toggle()
-            if cardsWasMatch != nil {
-                if cardsWasMatch == true { deal(3) }
+            if let cardsWasMatch = cardsWereMatched {
+                if cardsWasMatch {
+                    dealCards(3)
+                }
                 resetCardProperties(chooosenIndex)
             }
-            cardsWasMatch = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
+            cardsWereMatched = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
             for index in selectedCardsIndices {
-                cards[index].isMatched = cardsWasMatch
+                cards[index].isMatched = cardsWereMatched
             }
             scoring()
         }
     }
     
-    mutating func deal(_ numberOfCards: Int = 0) {
+    mutating func dealCards(_ numberOfCards: Int = 0) {
         for _ in 0..<numberOfCards {
             if let index = isMatchedCards.sorted(by: >).first {
                 if deck.count > 0 {
@@ -77,7 +102,7 @@ struct SetGame<CardContent> where CardContent: Matchable {
             else if deck.count > 0 {
                 cards.append(deck.remove(at: 0))
             }
-            cardsWasMatch = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
+            cardsWereMatched = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
         }
         if (numberOfCards == 3 && selectedCardsIndices.count < 3 && selectedCardsIndices.count != 1 && !hints.isEmpty) {
             players[numberOfCurrentPlayer].score -= 1
@@ -98,17 +123,19 @@ struct SetGame<CardContent> where CardContent: Matchable {
    
     mutating func cheat() {
         deCheat()
-        if cardsWasMatch == true {
-            deal(3)
-            cardsWasMatch = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
+        if let cardsWereMatched = cardsWereMatched, cardsWereMatched {
+            dealCards(3)
+            self.cardsWereMatched = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content})
         }
         countHints()
-        if numberHint >= hints.count { numberHint = 0}
+        if hintNumber >= hints.count {
+            hintNumber = 0
+        }
         if hints.count > 0 {
-            for index in hints[numberHint] {
+            for index in hints[hintNumber] {
                 cards[index].isHint = true
             }
-            numberHint += 1
+            hintNumber += 1
         }
     }
     
@@ -120,10 +147,12 @@ struct SetGame<CardContent> where CardContent: Matchable {
     }
     
     mutating func scoring() {
-        if cardsWasMatch == true {
+        guard let cardsWereMatched = cardsWereMatched else { return }
+
+        if cardsWereMatched {
             timeLastThreeCardsWereChosen = Date()
             players[numberOfCurrentPlayer].score += max(Int(20/timeSpent),2)
-        } else if cardsWasMatch == false {
+        } else {
             players[numberOfCurrentPlayer].score -= 1
         }
     }
@@ -155,12 +184,8 @@ struct SetGame<CardContent> where CardContent: Matchable {
         } // >2
     }
     
-    mutating func spentTimeFunc(timeHasPassed: Int) {
-        timeSpent = timeHasPassed
-    }
-
     mutating func changePlayer() {
-        if numberOfCurrentPlayer == countPlayers-1 {
+        if numberOfCurrentPlayer == playersCount-1 {
             numberOfCurrentPlayer = 0
         } else {
             numberOfCurrentPlayer += 1
@@ -193,12 +218,11 @@ struct SetCard: Matchable { // CardConfiguration
     
     static func match(cards: [SetCard]) -> Bool? {
         guard cards.count == 3 else {return nil}
-        let sum: [Int]
-        sum = [
-            cards.reduce(0, {$0 + $1.shape.rawValue}),
-            cards.reduce(0, {$0 + $1.fill.rawValue}),
-            cards.reduce(0, {$0 + $1.color.rawValue}),
-            cards.reduce(0, {$0 + $1.count.rawValue})
+        let sum = [
+            cards.reduce(0, { $0 + $1.shape.rawValue }),
+            cards.reduce(0, { $0 + $1.fill.rawValue }),
+            cards.reduce(0, { $0 + $1.color.rawValue }),
+            cards.reduce(0, { $0 + $1.count.rawValue })
         ]
         return sum.reduce(true, {$0 && ($1 % 3 == 0)})
     }

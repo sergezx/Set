@@ -56,7 +56,7 @@ struct ContentView: View {
     var deal: some View {
         HStack{
             Button("Deal +3")
-            { game.deal() }
+            { game.dealCards() }
                 .font(.title3)
                 .roundButtonStyle(colorButton: .purple)
         }
@@ -74,21 +74,43 @@ struct ContentView: View {
             Button("\(game.players[game.numberOfCurrentPlayer].name)")
             { game.changePlayer() }
                 .roundButtonStyle(colorButton: .green)
+//                .onReceive(<#T##publisher: Publisher##Publisher#>, perform: <#T##(Publisher.Output) -> Void#>)
         }
     }
 }
 
 
 
-
-
-
-
-
-
-
-
-
+/*
+struct SetCard: Matchable { // CardConfiguration
+    let shape: Variant
+    let fill: Variant
+    let color: Variant
+    let count: Variant
+    
+    enum Variant: Int, CaseIterable {
+        case v1 = 1
+        case v2
+        case v3
+        
+        var color: Color {
+            switch self {
+            case .v1: return .red
+            case .v2: return .green
+            case .v3: return .purple
+            }
+        }
+        var shape: Color {
+            switch self {
+            case .v1: return .red
+            case .v2: return .green
+            case .v3: return .purple
+            }
+        }
+    }
+}
+    SetCard.shape
+*/
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
