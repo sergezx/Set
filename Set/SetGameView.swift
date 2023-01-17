@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var game: SetCardGame
-
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -40,41 +40,54 @@ struct ContentView: View {
                 HStack {
                     changePlayer
                 }
-
+                
             }
             .padding(.horizontal)
             .toolbar {
                 Button("New Game") {
-                    game.newGame()
+                    withAnimation  {
+                        game.newGame()
+                    }
                 }
             }
             .navigationBarTitle("Set Game!")
         }
     }
-
-// Buttons
+    
+    // Buttons
     var deal: some View {
         HStack{
             Button("Deal +3")
-            { game.dealCards() }
-                .font(.title3)
-                .roundButtonStyle(colorButton: .purple)
+            {
+                withAnimation  {
+                    game.dealCards()
+                }
+            }
+            .font(.title3)
+            .roundButtonStyle(colorButton: .purple)
         }
     }
     var cheat: some View {
         HStack{
             Button("Cheat \(game.numberHint) / \(game.hintsCount)")
-            { game.cheat() }
-                .font(.title3)
-                .roundButtonStyle(colorButton: .purple)
+            {
+                withAnimation  {
+                    game.cheat()
+                }
+            }
+            .font(.title3)
+            .roundButtonStyle(colorButton: .purple)
         }
     }
     var changePlayer: some View {
         HStack{
             Button("\(game.players[game.numberOfCurrentPlayer].name)")
-            { game.changePlayer() }
-                .roundButtonStyle(colorButton: .green)
-//                .onReceive(<#T##publisher: Publisher##Publisher#>, perform: <#T##(Publisher.Output) -> Void#>)
+            {
+                withAnimation  {
+                    game.changePlayer()
+                }
+            }
+            .roundButtonStyle(colorButton: .green)
         }
     }
 }
@@ -82,35 +95,35 @@ struct ContentView: View {
 
 
 /*
-struct SetCard: Matchable { // CardConfiguration
-    let shape: Variant
-    let fill: Variant
-    let color: Variant
-    let count: Variant
-    
-    enum Variant: Int, CaseIterable {
-        case v1 = 1
-        case v2
-        case v3
-        
-        var color: Color {
-            switch self {
-            case .v1: return .red
-            case .v2: return .green
-            case .v3: return .purple
-            }
-        }
-        var shape: Color {
-            switch self {
-            case .v1: return .red
-            case .v2: return .green
-            case .v3: return .purple
-            }
-        }
-    }
-}
-    SetCard.shape
-*/
+ struct SetCard: Matchable { // CardConfiguration
+ let shape: Variant
+ let fill: Variant
+ let color: Variant
+ let count: Variant
+ 
+ enum Variant: Int, CaseIterable {
+ case v1 = 1
+ case v2
+ case v3
+ 
+ var color: Color {
+ switch self {
+ case .v1: return .red
+ case .v2: return .green
+ case .v3: return .purple
+ }
+ }
+ var shape: Color {
+ switch self {
+ case .v1: return .red
+ case .v2: return .green
+ case .v3: return .purple
+ }
+ }
+ }
+ }
+ SetCard.shape
+ */
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
