@@ -21,6 +21,8 @@ struct SetGame<CardContent> where CardContent: Matchable {
             countHints()
         }
     }
+    private(set) var discardPile = [Card]()
+    
     private var selectedCardsIndices: [Int] { cards.indices.filter { cards[$0].isChoosen } }
     private var isMatchedCards: [Int] { cards.indices.filter { cards[$0].isMatched == true } }
     private(set) var cardsWereMatched: Bool?
@@ -38,25 +40,15 @@ struct SetGame<CardContent> where CardContent: Matchable {
     private(set) var playersCount: Int
     private(set) var players = [Player]()
     private(set) var numberOfCurrentPlayer = 0
-    
     private(set) var currentDate = Date.now
-//    private(set) var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    private(set) var timer = Timer.publish(every: 1, on: .main, in: .common)
     private(set) var timerSubscription: AnyCancellable?
     
     
-    init(numberOfCardsInDeck: Int, numberOfCardsStart: Int, playersCount: Int, cardContentFactory: (Int) -> CardContent) {
+    init(numberOfCardsInDeck: Int, playersCount: Int, cardContentFactory: (Int) -> CardContent) {
         self.playersCount = playersCount
-        
+                
         fillDeck(numberOfCardsInDeck: numberOfCardsInDeck, cardContentFactory: cardContentFactory)
-        dealCards(numberOfCardsStart)
         generatePlayers(playersCount: playersCount)
-        
-//        timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-        timerSubscription = timer.eraseToAnyPublisher().sink { _ in } // подписка, в закрывании можно писать все что нужно делать: смена пользователя, обнулять время 
-//        timerSubscription?.cancel()
-// лучше создать метод , который будет создавать таймер и подписку на него startTimer()
     }
     
     mutating func generatePlayers(playersCount: Int) {
@@ -68,17 +60,25 @@ struct SetGame<CardContent> where CardContent: Matchable {
     mutating func fillDeck(numberOfCardsInDeck: Int, cardContentFactory: (Int) -> CardContent) {
         for index in 0..<numberOfCardsInDeck {
             let content = cardContentFactory(index)
-            deck.append(Card(id: index, content: content))
+            deck.append(Card(isFaceUp: false, id: index, content: content))
         }
-        deck.shuffle()
+//        deck.shuffle()
     }
 
+    mutating func flipOver(_ card: Card) {
+        guard let choosenIndex = cards.firstIndex(where: { $0.id == card.id}) else {
+            return
+        }
+        self.cards[choosenIndex].isFaceUp = true
+    }
+    
     mutating func choose(_ card: Card) {
         if let chooosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
             cards[chooosenIndex].isChoosen.toggle()
             if let cardsWasMatch = cardsWereMatched {
                 if cardsWasMatch {
-                    dealCards(3)
+                    discard()
+//                    dealCards(3) // тут вызываем функцию переноса карт в сбор
                 }
                 resetCardProperties(chooosenIndex)
             }
@@ -95,12 +95,14 @@ struct SetGame<CardContent> where CardContent: Matchable {
             if let index = isMatchedCards.sorted(by: >).first {
                 if deck.count > 0 {
                     cards[index] = deck.remove(at: 0)
+                    cards[index].isFaceUp = true
                 } else {
                     cards.remove(at: index)
                 }
             }
             else if deck.count > 0 {
                 cards.append(deck.remove(at: 0))
+//                cards[cards.count-1].isFaceUp = true
             }
             cardsWereMatched = CardContent.match(cards: selectedCardsIndices.map {cards[$0].content}) ?? nil
         }
@@ -109,6 +111,15 @@ struct SetGame<CardContent> where CardContent: Matchable {
         }
     }
     
+    mutating func discard() {
+        for index in isMatchedCards.sorted(by: >) {
+            var discardedCard = cards.remove(at: index)
+            discardedCard.isMatched = nil
+            discardedCard.isChoosen = false
+            discardedCard.isHint = false
+            discardPile.append(discardedCard)
+        }
+    }
 /*
     mutating func changeCards(){
         for index in isMatchedCards.sorted(by: >) {
@@ -196,6 +207,7 @@ struct SetGame<CardContent> where CardContent: Matchable {
     }
     
     struct Card: Identifiable {
+        var isFaceUp =  false
         var isChoosen =  false
         var isMatched: Bool?
         var isHint = false
@@ -247,6 +259,9 @@ struct SetCardDeck {
                 }
             }
         }
+//        cards.shuffle()
+    }
+    mutating func shuffle() {
         cards.shuffle()
     }
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		294138EF29780CFB000ED673 /* Cardify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294138EE29780CFB000ED673 /* Cardify.swift */; };
 		2970CB292954DE350094DC79 /* SetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2970CB282954DE350094DC79 /* SetApp.swift */; };
 		2970CB2B2954DE350094DC79 /* SetGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2970CB2A2954DE350094DC79 /* SetGameView.swift */; };
 		2970CB2D2954DE350094DC79 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2970CB2C2954DE350094DC79 /* Assets.xcassets */; };
@@ -42,6 +43,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		294138EE29780CFB000ED673 /* Cardify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cardify.swift; sourceTree = "<group>"; };
 		2970CB252954DE350094DC79 /* Set.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Set.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2970CB282954DE350094DC79 /* SetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetApp.swift; sourceTree = "<group>"; };
 		2970CB2A2954DE350094DC79 /* SetGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetGameView.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				2970CB552954DEE80094DC79 /* Diamond.swift */,
 				2970CB572954DF150094DC79 /* ShapeExtension.swift */,
 				2970CB592954DF420094DC79 /* CardView.swift */,
+				294138EE29780CFB000ED673 /* Cardify.swift */,
 				2970CB61296AE5BA0094DC79 /* ViewExtension.swift */,
 			);
 			path = Views;
@@ -289,6 +292,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				294138EF29780CFB000ED673 /* Cardify.swift in Sources */,
 				2970CB562954DEE80094DC79 /* Diamond.swift in Sources */,
 				2970CB5A2954DF420094DC79 /* CardView.swift in Sources */,
 				2970CB542954DECA0094DC79 /* Squiggle.swift in Sources */,

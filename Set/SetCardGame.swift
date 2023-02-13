@@ -12,10 +12,11 @@ class SetCardGame: ObservableObject {
     static var deckSetting = SetCardDeck()
     static var numberOfCardsStart = 12
     static var playersCount = 2
+    static var numberCardsForDeal = 3
 
-    
     private static func createSetGame() -> SetGame<SetCard> {
-        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, numberOfCardsStart: numberOfCardsStart, playersCount: playersCount ) { index in
+        deckSetting.shuffle()
+        return SetGame<SetCard>( numberOfCardsInDeck: deckSetting.cards.count, playersCount: playersCount ) { index in
             deckSetting.cards[index]
         }
     }
@@ -23,13 +24,17 @@ class SetCardGame: ObservableObject {
     @Published private var model = createSetGame()
 
     // MARK: - Access to the model
-    
+
     var cards: Array<Card> {
         return model.cards
     }
 
     var deck: Array<Card> {
         return model.deck
+    }
+    
+    var discardPile: Array<Card> {
+        return model.discardPile
     }
 
     var players: Array<Player> {
@@ -47,17 +52,23 @@ class SetCardGame: ObservableObject {
     var numberOfCurrentPlayer: Int {
         return model.numberOfCurrentPlayer
     }
-        
+
+    
     // MARK: - Intent(s)
     
-    func dealCards() {
-        model.dealCards(3)
+    func dealCards() -> [Card] {
+        model.dealCards(cards.isEmpty ? SetCardGame.numberOfCardsStart : SetCardGame.numberCardsForDeal)
+        return model.cards
+    }
+    
+    func flipOver(_ card: Card) {
+        model.flipOver(card)
     }
     
     func choose(_ card: Card) {
-            model.choose(card)
+        model.choose(card)
     }
-
+        
     func newGame() {
         model = SetCardGame.createSetGame()
     }
@@ -69,17 +80,4 @@ class SetCardGame: ObservableObject {
     func changePlayer() {
         model.changePlayer()
     }
-}
-
-// Here will be my thoughts on the timer in the Game
-
-class StopWatchManager {
-    var secondsElapsed = 0.0
-    var timer = Timer()
-    
-    func start() {
-          timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-              self.secondsElapsed += 0.1
-          }
-      }
 }
